@@ -10,7 +10,7 @@ def send_schedule_to_nodejs_server(schedule_tuple, server_url):
     grade, pdf_schedule = schedule_tuple
 
     # Send a POST request to the server with the grade and PDF file data
-    files = {'schedule': (f'{grade}.pdf', pdf_schedule)}
+    files = {'schedule': (f'{grade.lower()}.pdf', pdf_schedule)}
     
     response = requests.post(server_url, files=files)
 

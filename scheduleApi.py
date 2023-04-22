@@ -1,46 +1,38 @@
-import PyPDF2
-import io
 from flask import Flask, send_file
-from scheduleOCR import extract_grade_page_num
+from scheduleOCR import extract_grades
+import requests
 
 app = Flask(__name__)
 
-@app.route('/get_grade_pdf/<grade>')
-def get_grade_pdf(grade):
-    pdf_file_path = r"C:\Users\MSI\Downloads\Emploi du temps Semaine 30-01-2023.pdf"
 
-    # Extract the page number where the grade is found
-    page_num = extract_grade_page_num(pdf_file_path, grade)
+def send_schedule_to_nodejs_server(schedule_tuple, server_url):
+    # Extract the grade and PDF file data from the tuple
+    grade, pdf_schedule = schedule_tuple
 
-    # Check if the grade is found in the PDF file
-    if page_num is None:
-        return f'Grade {grade} not found in the PDF file'
+    # Send a POST request to the server with the grade and PDF file data
+    files = {'schedule': (f'{grade}.pdf', pdf_schedule)}
+    
+    response = requests.post(server_url, files=files)
 
-    # Open the PDF file in read-binary mode
-    with open(pdf_file_path, 'rb') as pdf_file:
-        # Create a PDF reader object
-        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+    # Check if the request was successful
+    if response.ok:
+        print(f'Schedule for grade {grade} sent to Node.js server.')
+    else:
+        print(f'Error sending schedule for grade {grade} to Node.js server.')
 
-        # Get the page that contains the grade
-        page = pdf_reader.getPage(page_num)
 
-        # Create a new PDF file writer object
-        pdf_writer = PyPDF2.PdfFileWriter()
+# Get the list of tuples of grade and PDF file data
+pdf_file_path = r"C:\Users\MSI\Downloads\Emploi du temps Semaine 30-01-2023.pdf"
+grade_data_list = extract_grades(pdf_file_path)
 
-        # Add the page to the PDF file writer object
-        pdf_writer.addPage(page)
+# Send each grade and PDF file data to the Node.js server
+if grade_data_list:
+    for schedule_tuple in grade_data_list:
+        server_url = 'http://localhost:9090/schedule/save'
+        send_schedule_to_nodejs_server(schedule_tuple, server_url)
+else:
+    print('No grades found in the PDF file.')
 
-        # Create a new in-memory file object
-        pdf_file_object = io.BytesIO()
-
-        # Write the PDF content to the in-memory file object
-        pdf_writer.write(pdf_file_object)
-
-        # Move the file pointer to the beginning of the file object
-        pdf_file_object.seek(0)
-
-        # Return the PDF file data as a response
-        return pdf_file_object.getvalue()
 
 if __name__ == '__main__':
     app.run()

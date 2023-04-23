@@ -1,6 +1,7 @@
 import PyPDF2
 import re
 import io
+import urllib.request
 
 
 def extract_grade(text):
@@ -18,8 +19,11 @@ def extract_grade(text):
         return None
     
     
-def extract_grades(pdf_file_path):
+def extract_grades(pdf_file_path_url):
     # Create a PDF reader object
+    pdf_url = pdf_file_path_url
+    pdf_file_path, _ = urllib.request.urlretrieve(pdf_url)
+
     pdf_reader = PyPDF2.PdfFileReader(open(pdf_file_path, 'rb'))
 
     # Initialize an empty list to store the grade and PDF file data for each page
@@ -60,5 +64,5 @@ def extract_grades(pdf_file_path):
     # If no grade is found, return an empty list
     return grade_data_list
     
-print(extract_grades(r"C:\Users\MSI\Downloads\Emploi du temps Semaine 30-01-2023.pdf"))
+
 

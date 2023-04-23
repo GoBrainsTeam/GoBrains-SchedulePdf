@@ -22,7 +22,7 @@ def send_schedule_to_nodejs_server(schedule_tuple, server_url):
 
 
 # Get the list of tuples of grade and PDF file data
-pdf_file_path = r"C:\Users\MSI\Downloads\Emploi du temps Semaine 30-01-2023.pdf"
+pdf_file_path = 'http://localhost:9090/schedule/schedules.pdf'
 grade_data_list = extract_grades(pdf_file_path)
 
 # Send each grade and PDF file data to the Node.js server
